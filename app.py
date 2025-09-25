@@ -110,10 +110,13 @@ def extract_tiktok():
             return jsonify({"error": "Invalid TikTok URL"}), 400
         
         # Run async function
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        
         result = loop.run_until_complete(get_video_data(url))
-        loop.close()
         
         if "error" in result:
             return jsonify(result), 400
