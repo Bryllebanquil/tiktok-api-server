@@ -11,9 +11,6 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-# Initialize TikTok API
-api = TikTokApi()
-
 def extract_video_id_from_url(url):
     """Extract video ID from TikTok URL"""
     patterns = [
@@ -45,53 +42,54 @@ async def get_video_data(url):
         if not video_id:
             return {"error": "Invalid TikTok URL"}
 
-        # Get video data
-        video = api.video(id=video_id)
-        video_data = await video.info()
-        
-        if not video_data:
-            return {"error": "Video not found or private"}
-        
-        # Extract relevant information
-        result = {
-            "success": True,
-            "data": {
-                "id": video_data.get("id", ""),
-                "title": video_data.get("desc", ""),
-                "desc": video_data.get("desc", ""),
-                "create_time": video_data.get("createTime", 0),
-                "author": {
-                    "unique_id": video_data.get("author", {}).get("uniqueId", ""),
-                    "nickname": video_data.get("author", {}).get("nickname", ""),
-                    "avatar": video_data.get("author", {}).get("avatarMedium", "")
-                },
-                "video": {
-                    "play_addr": video_data.get("video", {}).get("playAddr", ""),
-                    "download_addr": video_data.get("video", {}).get("downloadAddr", ""),
-                    "cover": video_data.get("video", {}).get("cover", ""),
-                    "dynamic_cover": video_data.get("video", {}).get("dynamicCover", ""),
-                    "width": video_data.get("video", {}).get("width", 0),
-                    "height": video_data.get("video", {}).get("height", 0),
-                    "duration": video_data.get("video", {}).get("duration", 0)
-                },
-                "music": {
-                    "id": video_data.get("music", {}).get("id", ""),
-                    "title": video_data.get("music", {}).get("title", ""),
-                    "author": video_data.get("music", {}).get("authorName", ""),
-                    "play_url": video_data.get("music", {}).get("playUrl", "")
-                },
-                "stats": {
-                    "digg_count": video_data.get("stats", {}).get("diggCount", 0),
-                    "share_count": video_data.get("stats", {}).get("shareCount", 0),
-                    "comment_count": video_data.get("stats", {}).get("commentCount", 0),
-                    "play_count": video_data.get("stats", {}).get("playCount", 0)
-                },
-                "hashtags": extract_hashtags(video_data.get("desc", "")),
-                "play": video_data.get("video", {}).get("downloadAddr", "") or video_data.get("video", {}).get("playAddr", "")
+        # Initialize TikTok API
+        async with TikTokApi() as api:
+            # Get video data using the new API
+            video = await api.video(url=url).info()
+            
+            if not video:
+                return {"error": "Video not found or private"}
+            
+            # Extract relevant information
+            result = {
+                "success": True,
+                "data": {
+                    "id": video.get("id", ""),
+                    "title": video.get("desc", ""),
+                    "desc": video.get("desc", ""),
+                    "create_time": video.get("createTime", 0),
+                    "author": {
+                        "unique_id": video.get("author", {}).get("uniqueId", ""),
+                        "nickname": video.get("author", {}).get("nickname", ""),
+                        "avatar": video.get("author", {}).get("avatarMedium", "")
+                    },
+                    "video": {
+                        "play_addr": video.get("video", {}).get("playAddr", ""),
+                        "download_addr": video.get("video", {}).get("downloadAddr", ""),
+                        "cover": video.get("video", {}).get("cover", ""),
+                        "dynamic_cover": video.get("video", {}).get("dynamicCover", ""),
+                        "width": video.get("video", {}).get("width", 0),
+                        "height": video.get("video", {}).get("height", 0),
+                        "duration": video.get("video", {}).get("duration", 0)
+                    },
+                    "music": {
+                        "id": video.get("music", {}).get("id", ""),
+                        "title": video.get("music", {}).get("title", ""),
+                        "author": video.get("music", {}).get("authorName", ""),
+                        "play_url": video.get("music", {}).get("playUrl", "")
+                    },
+                    "stats": {
+                        "digg_count": video.get("stats", {}).get("diggCount", 0),
+                        "share_count": video.get("stats", {}).get("shareCount", 0),
+                        "comment_count": video.get("stats", {}).get("commentCount", 0),
+                        "play_count": video.get("stats", {}).get("playCount", 0)
+                    },
+                    "hashtags": extract_hashtags(video.get("desc", "")),
+                    "play": video.get("video", {}).get("downloadAddr", "") or video.get("video", {}).get("playAddr", "")
+                }
             }
-        }
-        
-        return result
+            
+            return result
         
     except Exception as e:
         logger.error(f"Error extracting video data: {str(e)}")
