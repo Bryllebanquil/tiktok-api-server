@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
-from TikTokApi import TikTokApi
-import asyncio
+import requests
 import re
 import os
 import logging
+import json
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -35,61 +35,96 @@ def extract_hashtags(text):
     hashtags = re.findall(hashtag_pattern, text)
     return ' '.join(hashtags)
 
-async def get_video_data(url):
-    """Get video data from TikTok URL"""
+def get_video_data(url):
+    """Get video data from TikTok URL using direct HTTP requests"""
     try:
         video_id = extract_video_id_from_url(url)
         if not video_id:
             return {"error": "Invalid TikTok URL"}
 
-        # Initialize TikTok API
-        async with TikTokApi() as api:
-            # Get video data using the new API
-            video = await api.video(url=url).info()
-            
-            if not video:
-                return {"error": "Video not found or private"}
-            
-            # Extract relevant information
-            result = {
-                "success": True,
-                "data": {
-                    "id": video.get("id", ""),
-                    "title": video.get("desc", ""),
-                    "desc": video.get("desc", ""),
-                    "create_time": video.get("createTime", 0),
-                    "author": {
-                        "unique_id": video.get("author", {}).get("uniqueId", ""),
-                        "nickname": video.get("author", {}).get("nickname", ""),
-                        "avatar": video.get("author", {}).get("avatarMedium", "")
-                    },
-                    "video": {
-                        "play_addr": video.get("video", {}).get("playAddr", ""),
-                        "download_addr": video.get("video", {}).get("downloadAddr", ""),
-                        "cover": video.get("video", {}).get("cover", ""),
-                        "dynamic_cover": video.get("video", {}).get("dynamicCover", ""),
-                        "width": video.get("video", {}).get("width", 0),
-                        "height": video.get("video", {}).get("height", 0),
-                        "duration": video.get("video", {}).get("duration", 0)
-                    },
-                    "music": {
-                        "id": video.get("music", {}).get("id", ""),
-                        "title": video.get("music", {}).get("title", ""),
-                        "author": video.get("music", {}).get("authorName", ""),
-                        "play_url": video.get("music", {}).get("playUrl", "")
-                    },
-                    "stats": {
-                        "digg_count": video.get("stats", {}).get("diggCount", 0),
-                        "share_count": video.get("stats", {}).get("shareCount", 0),
-                        "comment_count": video.get("stats", {}).get("commentCount", 0),
-                        "play_count": video.get("stats", {}).get("playCount", 0)
-                    },
-                    "hashtags": extract_hashtags(video.get("desc", "")),
-                    "play": video.get("video", {}).get("downloadAddr", "") or video.get("video", {}).get("playAddr", "")
-                }
+        # Headers to mimic a browser request
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+        }
+
+        # Make request to TikTok URL
+        response = requests.get(url, headers=headers, timeout=30)
+        
+        if response.status_code != 200:
+            return {"error": "Failed to fetch TikTok page"}
+
+        # Extract JSON data from the page
+        html_content = response.text
+        
+        # Look for JSON data in script tags
+        json_pattern = r'<script[^>]*>.*?window\.__INITIAL_STATE__\s*=\s*({.*?});'
+        match = re.search(json_pattern, html_content, re.DOTALL)
+        
+        if not match:
+            # Try alternative pattern
+            json_pattern = r'<script[^>]*>.*?window\.__INITIAL_STATE__\s*=\s*({.*?});'
+            match = re.search(json_pattern, html_content, re.DOTALL)
+        
+        if not match:
+            return {"error": "Could not extract video data from TikTok page"}
+
+        try:
+            data = json.loads(match.group(1))
+        except json.JSONDecodeError:
+            return {"error": "Invalid JSON data in TikTok page"}
+
+        # Extract video information from the JSON data
+        # This is a simplified extraction - the actual structure may vary
+        video_data = data.get('VideoModule', {}).get('videoData', {})
+        
+        if not video_data:
+            return {"error": "Video data not found in TikTok page"}
+
+        # Extract relevant information
+        result = {
+            "success": True,
+            "data": {
+                "id": video_data.get("id", ""),
+                "title": video_data.get("desc", ""),
+                "desc": video_data.get("desc", ""),
+                "create_time": video_data.get("createTime", 0),
+                "author": {
+                    "unique_id": video_data.get("author", {}).get("uniqueId", ""),
+                    "nickname": video_data.get("author", {}).get("nickname", ""),
+                    "avatar": video_data.get("author", {}).get("avatarMedium", "")
+                },
+                "video": {
+                    "play_addr": video_data.get("video", {}).get("playAddr", ""),
+                    "download_addr": video_data.get("video", {}).get("downloadAddr", ""),
+                    "cover": video_data.get("video", {}).get("cover", ""),
+                    "dynamic_cover": video_data.get("video", {}).get("dynamicCover", ""),
+                    "width": video_data.get("video", {}).get("width", 0),
+                    "height": video_data.get("video", {}).get("height", 0),
+                    "duration": video_data.get("video", {}).get("duration", 0)
+                },
+                "music": {
+                    "id": video_data.get("music", {}).get("id", ""),
+                    "title": video_data.get("music", {}).get("title", ""),
+                    "author": video_data.get("music", {}).get("authorName", ""),
+                    "play_url": video_data.get("music", {}).get("playUrl", "")
+                },
+                "stats": {
+                    "digg_count": video_data.get("stats", {}).get("diggCount", 0),
+                    "share_count": video_data.get("stats", {}).get("shareCount", 0),
+                    "comment_count": video_data.get("stats", {}).get("commentCount", 0),
+                    "play_count": video_data.get("stats", {}).get("playCount", 0)
+                },
+                "hashtags": extract_hashtags(video_data.get("desc", "")),
+                "play": video_data.get("video", {}).get("downloadAddr", "") or video_data.get("video", {}).get("playAddr", "")
             }
-            
-            return result
+        }
+        
+        return result
         
     except Exception as e:
         logger.error(f"Error extracting video data: {str(e)}")
@@ -109,14 +144,8 @@ def extract_tiktok():
         if 'tiktok.com' not in url:
             return jsonify({"error": "Invalid TikTok URL"}), 400
         
-        # Run async function
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        
-        result = loop.run_until_complete(get_video_data(url))
+        # Get video data
+        result = get_video_data(url)
         
         if "error" in result:
             return jsonify(result), 400
