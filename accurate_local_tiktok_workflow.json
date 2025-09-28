@@ -888,19 +888,19 @@
               "id": "02df37c0-66a5-45a2-8d64-41ca83cd046d",
               "name": "videoUrl",
               "type": "string",
-              "value": "={{ $json.result && $json.result.type === 'video' && $json.result.video ? ($json.result.video.noWatermark || $json.result.video.watermark || $json.result.video.play) : ($json.data && $json.data.play ? $json.data.play : ($json.video || $json.url || '')) }}"
+              "value": "={{ $json.data && $json.data.play ? $json.data.play : ($json.data && $json.data.video && $json.data.video.play_addr ? $json.data.video.play_addr : '') }}"
             },
             {
               "id": "a849302a-83ba-47e9-b93f-81ef7c38c150",
               "name": "author",
               "type": "string",
-              "value": "={{ $json.result && $json.result.author ? $json.result.author.nickname : ($json.data && $json.data.author ? $json.data.author.nickname : ($json.author || 'TikTok_Video')) }}"
+              "value": "={{ $json.data && $json.data.author && $json.data.author.nickname ? $json.data.author.nickname : ($json.data && $json.data.author && $json.data.author.unique_id ? $json.data.author.unique_id : 'TikTok_Video') }}"
             },
             {
               "id": "caption-data",
               "name": "description",
               "type": "string",
-              "value": "={{ $json.result && $json.result.desc ? $json.result.desc : ($json.data && $json.data.title ? $json.data.title : ($json.description || $json.title || '')) }}"
+              "value": "={{ $json.data && $json.data.desc ? $json.data.desc : ($json.data && $json.data.title ? $json.data.title : '') }}"
             }
           ]
         },
@@ -946,7 +946,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://localhost:8080/api/download",
+        "url": "http://localhost:5000/extract_tiktok",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -966,7 +966,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "{\n  \"url\": \"{{ $json.message.text }}\",\n  \"version\": \"v1\"\n}",
+        "jsonBody": "{\n  \"url\": \"{{ $json.message.text }}\"\n}",
         "options": {
           "timeout": 45000,
           "response": {
@@ -1023,7 +1023,7 @@
       "parameters": {
         "operation": "sendMessage",
         "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
-        "text": "❌ Sorry, I couldn't download this TikTok video.\n\n🔍 **Possible reasons:**\n• The video might be private or restricted\n• Invalid TikTok URL format\n• Video may have been deleted\n• Local server connection issue\n\n💡 **Please try:**\n✅ A different public TikTok video URL\n✅ Make sure the video is accessible\n✅ Check if the URL is complete\n\n🔗 **Original URL:** {{ $('Telegram Trigger1').item.json.message.text }}\n\n🛠️ **Debug:** Local TikTok API server (localhost:8080)",
+        "text": "❌ Sorry, I couldn't download this TikTok video.\n\n🔍 **Possible reasons:**\n• The video might be private or restricted\n• Invalid TikTok URL format\n• Video may have been deleted\n• Local server connection issue\n\n💡 **Please try:**\n✅ A different public TikTok video URL\n✅ Make sure the video is accessible\n✅ Check if the URL is complete\n\n🔗 **Original URL:** {{ $('Telegram Trigger1').item.json.message.text }}\n\n🛠️ **Debug:** Local TikTok API server (localhost:5000)",
         "additionalFields": {}
       },
       "id": "send-error-message",
