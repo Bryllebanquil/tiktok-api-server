@@ -61,18 +61,15 @@ def get_video_data(url):
         # Extract JSON data from the page
         html_content = response.text
         
-        # Look for JSON data in script tags
-        json_pattern = r'<script[^>]*>.*?window\.__INITIAL_STATE__\s*=\s*({.*?});'
+        # Look for JSON data in script tags (updated for SIGI_STATE)
+        json_pattern = r"window\['SIGI_STATE'\]\s*=\s*({.*?});"  # New TikTok state var
         match = re.search(json_pattern, html_content, re.DOTALL)
-        
         if not match:
-            # Try alternative pattern
-            json_pattern = r'<script[^>]*>.*?window\.__INITIAL_STATE__\s*=\s*({.*?});'
+            # Try alternative pattern (sometimes just SIGI_STATE)
+            json_pattern = r'SIGI_STATE\s*=\s*({.*?});'
             match = re.search(json_pattern, html_content, re.DOTALL)
-        
         if not match:
             return {"error": "Could not extract video data from TikTok page"}
-
         try:
             data = json.loads(match.group(1))
         except json.JSONDecodeError:
