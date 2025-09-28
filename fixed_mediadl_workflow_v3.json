@@ -1,0 +1,1435 @@
+{
+  "name": "next plan",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "caption-extract",
+              "name": "caption",
+              "type": "string",
+              "value": "={{ $json.description || $json.title || 'No caption available' }}"
+            },
+            {
+              "id": "hashtags-extract",
+              "name": "hashtags",
+              "type": "string",
+              "value": "={{ $json.description ? $json.description.match(/#\\w+/g)?.join(' ') || '' : '' }}"
+            },
+            {
+              "id": "author-extract",
+              "name": "author",
+              "type": "string",
+              "value": "={{ $json.author || 'TikTok_Video' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fed478ed-08c3-41e3-830d-f6de85faafc0",
+      "name": "Set Caption Hashtags",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1584,
+        832
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1824,
+        1072
+      ],
+      "id": "c8edc5e5-43cc-4363-99f6-75a56e8f9c51",
+      "name": "Google Drive Upload",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "oBETzHgKihIQsF9U",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appKOs0xmBWqhjPEC",
+          "mode": "list",
+          "cachedResultName": "Content Publishing System 2.0 (Template)",
+          "cachedResultUrl": "https://airtable.com/appKOs0xmBWqhjPEC"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblvjc0sIpiw7Ct8s",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appKOs0xmBWqhjPEC/tblvjc0sIpiw7Ct8s"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Video Name": "={{ $('Set Caption Hashtags').item.json.author }}",
+            "Details/Captions": "={{ $('Set Caption Hashtags').item.json.caption }} {{ $('Set Caption Hashtags').item.json.hashtags }}",
+            "Video Link (Gdrive)": "={{ $('Google Drive Upload').item.json.webViewLink }}",
+            "Status": "Start Upload"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Video Name",
+              "displayName": "Video Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Details/Captions",
+              "displayName": "Details/Captions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Video Link (Gdrive)",
+              "displayName": "Video Link (Gdrive)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Start Upload",
+                  "value": "Start Upload"
+                },
+                {
+                  "name": "Completed",
+                  "value": "Completed"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1984,
+        1072
+      ],
+      "id": "1336fbdb-1f42-4f32-a37d-60b8121feb27",
+      "name": "Create Airtable Record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "3yLgYWYX8imUGN6q",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c087ebbf-22a5-45f4-82d5-ddabfd921889",
+              "leftValue": "={{ $json.fields.YouTube }}",
+              "rightValue": "Uploaded",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "301baec8-c772-4042-bdc1-7d2d99f07043",
+              "leftValue": "={{ $json.fields.Instagram }}",
+              "rightValue": "Uploaded",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "c7469347-06e8-4163-a280-d85ed47d167b",
+              "leftValue": "={{ $json.fields.Facebook }}",
+              "rightValue": "Uploaded",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "a216f3c7-76f0-4bdb-89c6-e9e0dd389ce5",
+              "leftValue": "={{ $json.fields.TikTok }}",
+              "rightValue": "Uploaded",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2256,
+        928
+      ],
+      "id": "fa5348bf-331a-46c8-adc1-e2179ddaf8b8",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appKOs0xmBWqhjPEC",
+          "mode": "list",
+          "cachedResultName": "Content Publishing System 2.0 (Template)",
+          "cachedResultUrl": "https://airtable.com/appKOs0xmBWqhjPEC"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblvjc0sIpiw7Ct8s",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appKOs0xmBWqhjPEC/tblvjc0sIpiw7Ct8s"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "Facebook": "Uploaded",
+            "TikTok": "Uploaded",
+            "Instagram": "Uploaded",
+            "Youtube": "Uploaded",
+            "Status": "Completed"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Video Name",
+              "displayName": "Video Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Details/Captions",
+              "displayName": "Details/Captions",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Video Link (Gdrive)",
+              "displayName": "Video Link (Gdrive)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Start Upload",
+                  "value": "Start Upload"
+                },
+                {
+                  "name": "Completed",
+                  "value": "Completed"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Youtube",
+              "displayName": "Youtube",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Uploaded",
+                  "value": "Uploaded"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Instagram",
+              "displayName": "Instagram",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Uploaded",
+                  "value": "Uploaded"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "TikTok",
+              "displayName": "TikTok",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Uploaded",
+                  "value": "Uploaded"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Facebook",
+              "displayName": "Facebook",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Uploaded",
+                  "value": "Uploaded"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2464,
+        640
+      ],
+      "id": "9c6854a3-3592-4bb1-899c-f24bb00b7990",
+      "name": "Facebook Posted1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "3yLgYWYX8imUGN6q",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appKOs0xmBWqhjPEC",
+          "mode": "list",
+          "cachedResultName": "Content Publishing System 2.0 (Template)",
+          "cachedResultUrl": "https://airtable.com/appKOs0xmBWqhjPEC"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblvjc0sIpiw7Ct8s",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appKOs0xmBWqhjPEC/tblvjc0sIpiw7Ct8s"
+        },
+        "filterByFormula": "{Status} = \"Start Upload\"",
+        "returnAll": false,
+        "limit": 1,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "Status"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        848,
+        576
+      ],
+      "id": "4aa0a4ce-ea4b-410a-a176-32a09cdfcc57",
+      "name": "Search Record1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "3yLgYWYX8imUGN6q",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appKOs0xmBWqhjPEC",
+          "mode": "list",
+          "cachedResultName": "Content Publishing System 2.0 (Template)",
+          "cachedResultUrl": "https://airtable.com/appKOs0xmBWqhjPEC"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblvjc0sIpiw7Ct8s",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appkyh69NFvBjh0Jz/tblvjc0sIpiw7Ct8s"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "Status": "Completed"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Start Upload",
+                  "value": "Start Upload"
+                },
+                {
+                  "name": "Completed",
+                  "value": "Completed"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2480,
+        896
+      ],
+      "id": "faa09da5-b3c6-45f1-af6e-6d60adcc9300",
+      "name": "Video Published1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "3yLgYWYX8imUGN6q",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.facebook.com/v22.0/{{ $('Start Upload1').item.json.video_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "status"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2288,
+        640
+      ],
+      "id": "20fe9674-3ec2-4381-a82a-8267777dfe43",
+      "name": "Check Status1",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "Y56ytqHEOfandsge",
+          "name": "final"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v22.0",
+        "node": "546441218542074/video_reels",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "upload_phase",
+                "value": "start"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        640
+      ],
+      "id": "8f765530-e66b-4af2-aa7f-9d4fb1a598d0",
+      "name": "Start Upload1",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "Y56ytqHEOfandsge",
+          "name": "final"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.upload_url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "file_url",
+              "value": "={{ $('Upload To Cloudinary1').item.json.url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1984,
+        640
+      ],
+      "id": "71e3724d-042e-4798-8906-4815bd0b4597",
+      "name": "Upload to Rupload1",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "Y56ytqHEOfandsge",
+          "name": "final"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v22.0/546441218542074/video_reels",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "video_id",
+              "value": "={{ $('Start Upload1').item.json.video_id }}"
+            },
+            {
+              "name": "upload_phase",
+              "value": "FINISH"
+            },
+            {
+              "name": "video_state",
+              "value": "PUBLISHED"
+            },
+            {
+              "name": "description",
+              "value": "={{ $('Publishing Agent1').item.json.output.facebook.description }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2144,
+        640
+      ],
+      "id": "3bf6af2f-1dd8-497a-b8a2-faa546d02518",
+      "name": "Upload Reel to FB1",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "Y56ytqHEOfandsge",
+          "name": "final"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Search Record1').item.json['Video Link (Gdrive)'] }}",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1392,
+        576
+      ],
+      "id": "c9ea50a8-3dbd-4a9c-b92b-6125451417b4",
+      "name": "Download Final Vid1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "oBETzHgKihIQsF9U",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cloudinary.com/v1_1/dx2jkjtdv/upload",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "=data"
+            },
+            {
+              "name": "upload_preset",
+              "value": "n8n_upload"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1616,
+        624
+      ],
+      "id": "71021a28-3411-4a19-986e-7378ae1bb36b",
+      "name": "Upload To Cloudinary1",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "MCtz3I545aLafY80",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 4,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        2032,
+        880
+      ],
+      "id": "eefdc41d-9923-4546-b4cf-085d629a9622",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyB1XBSCm-aCBjYRYwqstIakTiLk-8tMAjo",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"You are an AI specialized in crafting high-impact, viral titles and descriptions optimized for TikTok Shorts, Instagram Reels, YouTube Shorts, and Facebook Reels. [...]\"\n        }\n      ]\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        576
+      ],
+      "id": "578cbd52-e836-49e8-a31b-b6671c56c0cc",
+      "name": "Publishing Agent1"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "68f2a743-0343-4ad0-90ba-15536a396c44",
+      "name": "Telegram Trigger1",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [
+        928,
+        832
+      ],
+      "webhookId": "a8cd8cc1-ce39-4adb-a389-cbca39849471",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "QGKb2J6oJY2JlG7v",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Filtering URL Only1').item.json.videoUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.9,id;q=0.8,da;q=0.7"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "name": "Referer",
+              "value": "https://mediadl.app/"
+            },
+            {
+              "name": "Sec-Fetch-Dest",
+              "value": "video"
+            },
+            {
+              "name": "Sec-Fetch-Mode",
+              "value": "no-cors"
+            },
+            {
+              "name": "Sec-Fetch-Site",
+              "value": "cross-site"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "id": "06e87128-1893-4b48-b05b-7044ed97b470",
+      "name": "Download Video File",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1376,
+        1072
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {
+          "caption": "TikTok: {{ $('Set Caption Hashtags').item.json.caption }}\nHashtags: {{ $('Set Caption Hashtags').item.json.hashtags }}",
+          "fileName": "={{ $('Set Caption Hashtags').item.json.author }}.mp4"
+        }
+      },
+      "id": "e6d9d62c-8f0d-4447-804a-f61983d86871",
+      "name": "Sent To Telegram Video1",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1632,
+        1072
+      ],
+      "webhookId": "ee4a87d1-b5b4-4015-a548-ae05ccbcf816",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "QGKb2J6oJY2JlG7v",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "02df37c0-66a5-45a2-8d64-41ca83cd046d",
+              "name": "videoUrl",
+              "type": "string",
+              "value": "={{ $json.medias && $json.medias.length > 0 ? ($json.medias[1] ? $json.medias[1].url : $json.medias[0].url) : ($json.url || '') }}"
+            },
+            {
+              "id": "a849302a-83ba-47e9-b93f-81ef7c38c150",
+              "name": "author",
+              "type": "string",
+              "value": "={{ $json.author || 'TikTok_Video' }}"
+            },
+            {
+              "id": "caption-data",
+              "name": "description",
+              "type": "string",
+              "value": "={{ $json.description || $json.title || '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b86a2596-a378-4bf2-8e54-8306d0dd4df6",
+      "name": "Filtering URL Only1",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1792,
+        832
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "id": "222446fe-b5da-4b59-ad20-de50d28974f8",
+      "name": "Delay 3S2",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        1376,
+        832
+      ],
+      "webhookId": "b2f58186-407f-423b-abfb-238845205460",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "amount": 5
+      },
+      "id": "90e522bb-4f8e-44da-826a-22950d1cd9c5",
+      "name": "Delay 5S for Processing",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        1168,
+        1072
+      ],
+      "webhookId": "64a268ce-677e-4aab-8c26-c0bb1d06ebf7",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mediadl.app/api/download",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.9,id;q=0.8,da;q=0.7"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Origin",
+              "value": "https://mediadl.app"
+            },
+            {
+              "name": "Referer",
+              "value": "https://mediadl.app/"
+            },
+            {
+              "name": "Sec-Fetch-Dest",
+              "value": "empty"
+            },
+            {
+              "name": "Sec-Fetch-Mode",
+              "value": "cors"
+            },
+            {
+              "name": "Sec-Fetch-Site",
+              "value": "same-origin"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"url\": \"{{ $('Expand TikTok URL').item.json.expandedUrl }}\"\n}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "25f56493-615e-486e-bd25-f29598a23de2",
+      "name": "Get Video Info from MediaDL",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1216,
+        832
+      ],
+      "notesInFlow": true,
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-video-url",
+              "leftValue": "={{ $json.videoUrl && $json.videoUrl.length > 10 }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        1072
+      ],
+      "id": "check-mediadl-success",
+      "name": "Check Video URL Available"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.message.text }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.9"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "name": "Upgrade-Insecure-Requests",
+              "value": "1"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "id": "expand-tiktok-url",
+      "name": "Expand TikTok URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1040,
+        832
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "expanded-url",
+              "name": "expandedUrl",
+              "type": "string",
+              "value": "={{ $json.headers && $json.headers.location ? $json.headers.location : $('Telegram Trigger1').item.json.message.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-expanded-url",
+      "name": "Extract Expanded URL",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1128,
+        832
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "sendMessage",
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "❌ Sorry, I couldn't download this TikTok video. The link might be invalid, private, or the video might not be available.\n\nPlease try:\n✅ A different TikTok video URL\n✅ Make sure the video is public\n✅ Try again in a few minutes\n\nOriginal URL: {{ $('Telegram Trigger1').item.json.message.text }}",
+        "additionalFields": {}
+      },
+      "id": "send-error-message",
+      "name": "Send Error Message",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1040,
+        1200
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "QGKb2J6oJY2JlG7v",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Set Caption Hashtags": {
+      "main": [
+        [
+          {
+            "node": "Filtering URL Only1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Upload": {
+      "main": [
+        [
+          {
+            "node": "Create Airtable Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Airtable Record": {
+      "main": [
+        [
+          {
+            "node": "Search Record1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Video Published1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Posted1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Search Record1": {
+      "main": [
+        [
+          {
+            "node": "Publishing Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Status1": {
+      "main": [
+        [
+          {
+            "node": "Facebook Posted1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Upload1": {
+      "main": [
+        [
+          {
+            "node": "Upload to Rupload1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Rupload1": {
+      "main": [
+        [
+          {
+            "node": "Upload Reel to FB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Reel to FB1": {
+      "main": [
+        [
+          {
+            "node": "Check Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Final Vid1": {
+      "main": [
+        [
+          {
+            "node": "Upload To Cloudinary1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload To Cloudinary1": {
+      "main": [
+        [
+          {
+            "node": "Start Upload1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publishing Agent1": {
+      "main": [
+        [
+          {
+            "node": "Download Final Vid1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Expand TikTok URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video File": {
+      "main": [
+        [
+          {
+            "node": "Sent To Telegram Video1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sent To Telegram Video1": {
+      "main": [
+        [
+          {
+            "node": "Google Drive Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtering URL Only1": {
+      "main": [
+        [
+          {
+            "node": "Check Video URL Available",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delay 3S2": {
+      "main": [
+        [
+          {
+            "node": "Set Caption Hashtags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delay 5S for Processing": {
+      "main": [
+        [
+          {
+            "node": "Download Video File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video Info from MediaDL": {
+      "main": [
+        [
+          {
+            "node": "Delay 3S2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Video URL Available": {
+      "main": [
+        [
+          {
+            "node": "Delay 5S for Processing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand TikTok URL": {
+      "main": [
+        [
+          {
+            "node": "Extract Expanded URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Expanded URL": {
+      "main": [
+        [
+          {
+            "node": "Get Video Info from MediaDL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4ffdfca8-6509-4b45-8774-2f9955615a49",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3d12d0d62a273a1044f8141409c4dd5759c0ff0ff2e1a578cdcfd3ac1069d9a8"
+  },
+  "id": "EI3O4azaJ9ChYJGI",
+  "tags": [
+    {
+      "createdAt": "2025-09-24T13:09:17.377Z",
+      "updatedAt": "2025-09-24T13:09:17.377Z",
+      "id": "N0heEDWs1i46A1D2",
+      "name": "W17: Content Publish2"
+    }
+  ]
+}
